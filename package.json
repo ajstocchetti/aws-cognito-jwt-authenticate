@@ -1,0 +1,32 @@
+{
+  "name": "aws-cognito-jwt-authenticate",
+  "version": "1.0.0",
+  "description": "authenticates AWS Cognito JWT",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test tests --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ajstocchetti/aws-cognito-jwt-authenticate.git"
+  },
+  "keywords": [
+    "aws",
+    "apigateway",
+    "cognito"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ajstocchetti/aws-cognito-jwt-authenticate/issues"
+  },
+  "homepage": "https://github.com/ajstocchetti/aws-cognito-jwt-authenticate#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^7.1.1"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.3"
+  }
+}
