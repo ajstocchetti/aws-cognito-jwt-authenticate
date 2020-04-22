@@ -2,7 +2,16 @@
 
 Easily verify that a Cognito JWT is valid for use and was signed by AWS.
 
+## Installation
+
+```bash
+npm i aws-cognito-jwt-authenticate
+```
+
+## Usage
+
 ```javascript
+const authenticator = require('aws-cognito-jwt-authenticate');
 try {
   const cognitoDetails = { userPoolId: 'your-pool-id', region: 'us-east-1' };
   const payload = await authenticator.validateJwt(jwt, cognitoDetails); // the decoded JWT payload
