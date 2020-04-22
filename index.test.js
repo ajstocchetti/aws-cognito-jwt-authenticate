@@ -1,43 +1,11 @@
 const auth = require('./index.js');
 const jwks = require('./jwk.js');
+const helper = require('./tests/helper.js');
 const {
   getPem,
   getUserPoolUri,
   validateJwt,
 } = auth;
-
-
-const knownPem = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiULGOd7nqw3qfpCkX2r7
-OQ3sH7ssNW0K8G4Td2xO06dp1mL4SCA2LA6ydHZmAP2UZvO46Tg9htQK8uIrQy61
-Lba9q7OZNFJmPSKW6lDuaEXnYYI8/Cufxw8080kVx2aTmCDi5s8FRyrbUEVAtxly
-gLYq+2/vx8wqzw9BH1QKFes+yjhqQ+CiF1BPDy+jrrMDne3mtb3LZZRjUPOu4wBy
-KS5XL/JUEqjB/3bOawE2wPREnOL0x0jrDyrbgKSS9BSdbihiwY8pYpf0rGuV85jy
-0GsMTtd/EVPI/1gDpaGit1bU/Kh+fXx7aSyVf24hFZqOaN+eN54KaDt8XRfZR6Dp
-uQIDAQAB
------END PUBLIC KEY-----
-`;
-const jwkResponse = {
-  keys: [
-    {
-      alg: 'RS256',
-      e: 'AQAB',
-      kid: '0utUHsLyqVfRPqgzNdOSadJPOURwef8gQcfdOJPZYe4=',
-      kty: 'RSA',
-      n: 'l8HFKtYH5ZdYrlLQ8qUrb9G9ugbqmse85LyWHbIe17PTlAnW18nWpDHtRfId7QkTGu91B9iXdH2_az9CcRaVmfUVIDVFJR2nCFYjc-_zeVsPzk_xL7tpIGhl0vN-zy6tuNyafX_IWH96xGhpy2ZjDyMnO5qrZcrTwlh0dLlkUYw86me9F6U4pKAo2EXYYqiSado4oYl_YtExC2LSDObI79Be1jaQJuHV7Z9knQ4-RGUwADhmLWZ60qq2MuewKrGuCzUcxZnrAOihwV5rEv16pvLgw-ydOdWQqTAPoH7LH7X5KRPcEtVZbzph3ng7KIqvlPR-qdQUT3PTqBSbRTUTyQ',
-      use: 'sig'
-    },
-    {
-      alg: 'RS256',
-      e: 'AQAB',
-      kid: '9OMIfBqkhYhwAz6edfIa3J679qgBhIiHH6fIpAVGb7Y=',
-      kty: 'RSA',
-      n: 'iULGOd7nqw3qfpCkX2r7OQ3sH7ssNW0K8G4Td2xO06dp1mL4SCA2LA6ydHZmAP2UZvO46Tg9htQK8uIrQy61Lba9q7OZNFJmPSKW6lDuaEXnYYI8_Cufxw8080kVx2aTmCDi5s8FRyrbUEVAtxlygLYq-2_vx8wqzw9BH1QKFes-yjhqQ-CiF1BPDy-jrrMDne3mtb3LZZRjUPOu4wByKS5XL_JUEqjB_3bOawE2wPREnOL0x0jrDyrbgKSS9BSdbihiwY8pYpf0rGuV85jy0GsMTtd_EVPI_1gDpaGit1bU_Kh-fXx7aSyVf24hFZqOaN-eN54KaDt8XRfZR6DpuQ',
-      use: 'sig'
-    }
-  ],
-};
-
 
 describe('getUserPoolUri', () => {
   // sometimes i wonder why i write tests for these types of functions
@@ -52,7 +20,7 @@ describe('getUserPoolUri', () => {
 
 describe('getPem', () => {
   beforeAll(() => {
-    jwks.getJwks = jest.fn(async () => jwkResponse);
+    jwks.getJwks = jest.fn(async () => helper.jwkResponse);
   });
 
   afterAll(() => {
@@ -65,12 +33,22 @@ describe('getPem', () => {
   });
 
   test('returns the pem on a successful lookup', async () => {
-    const pem = await getPem('some-uri', '9OMIfBqkhYhwAz6edfIa3J679qgBhIiHH6fIpAVGb7Y=');
-    expect(pem).toBe(knownPem);
+    const pem = await getPem('some-uri', 'cognito-util-tests');
+    expect(pem).toBe(helper.pubKey);
   });
 });
 
-describe('validateJwt', () => {
+describe('validateJwt - failure cases', () => {
+  beforeAll(() => {
+    jwks.getJwks = jest.fn(async () => helper.jwkResponse);
+  });
+
+  afterAll(() => {
+    jwks.getJwks.mockRestore();
+  });
+
+  const cognitoDetails = { region: 'us-east-2', userPoolId: 'abcde-12345' };
+
   test('Throws an error if no JWT is provided', async () => {
     await expect(validateJwt())
     .rejects
@@ -81,5 +59,71 @@ describe('validateJwt', () => {
     await expect(validateJwt('not a token'))
     .rejects
     .toThrow('Invalid JWT: not a token');
+  });
+
+  test('Throws an error if token is not from allowed Cognito User Pool', async () => {
+    const token = helper.sign({ iss: 'some random person' });
+    await expect(validateJwt(token, cognitoDetails))
+    .rejects
+    .toThrow('Provided Token not from allowed UserPool: iss = some random person');
+  });
+
+  test('Throws an error if token is not identity token', async () => {
+    const iss = getUserPoolUri(cognitoDetails);
+    const token = helper.sign({ iss, token_use: 'for testing only' });
+    await expect(validateJwt(token, cognitoDetails))
+    .rejects
+    .toThrow('Provided Token is not an identity token: for testing only');
+  });
+
+  test('Throws an error if it cannot retreive a PEM for the JWT', async () => {
+    const iss = getUserPoolUri(cognitoDetails);
+    const token = helper.sign({ iss, token_use: 'id' });
+    await expect(validateJwt(token, cognitoDetails))
+    .rejects
+    .toThrow('Invalid JSON Web Key');
+  });
+});
+
+
+describe('validateJwt - success cases', () => {
+  beforeAll(() => {
+    jwks.getJwks = jest.fn(async () => helper.jwkResponse);
+  });
+
+  afterAll(() => {
+    jwks.getJwks.mockRestore();
+  });
+
+  const cognitoDetails = { region: 'us-east-2', userPoolId: 'abcde-12345' };
+  const iss = getUserPoolUri(cognitoDetails);
+  const time = Math.round(Date.now()/1000);
+  const tokenPayload = {
+    sub: 'subject',
+    aud: 'audience',
+    iss: iss,
+    token_use: 'id',
+    'cognito:username': 'util-test',
+    auth_time: time,
+    iat: time,
+    exp: time + 3600,
+  };
+  const token = helper.sign(tokenPayload, true);
+
+  test('Works with a properly signed JWT', async () => {
+    const validated = await validateJwt(token, cognitoDetails);
+    expect(validated).toEqual(tokenPayload);
+  });
+
+  test('Allows passing in an array of User Pool details', async ()  => {
+    const detailsArray = [
+      { region: 'us-west-1', userPoolId: '1'},
+      { region: 'us-west-2', userPoolId: '2'},
+      { region: 'us-east-1', userPoolId: '3'},
+      cognitoDetails,
+      { region: 'us-west-1', userPoolId: '4'},
+    ];
+    const validated = await validateJwt(token, detailsArray);
+    expect(validated).toEqual(tokenPayload);
   });
 });

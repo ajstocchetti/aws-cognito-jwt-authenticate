@@ -38,7 +38,7 @@ async function validateJwt(token, cognitoArray) {
   }
 
   // Reject if JWK is not valid
-  const pem = getPem(issuer, decodedJwt.header.kid);
+  const pem = await getPem(issuer, decodedJwt.header.kid);
   if (!pem) {
     throw new Error('Invalid JSON Web Key');
   }
@@ -47,7 +47,6 @@ async function validateJwt(token, cognitoArray) {
   // (jwt.verify will throw an error if the token is invalid)
   return jwt.verify(token, pem, { issuer });
 }
-
 
 function getUserPoolUri({userPoolId, region}) {
   return `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`;
