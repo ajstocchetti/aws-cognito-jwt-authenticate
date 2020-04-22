@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const priKey = fs.readFileSync(path.resolve(__dirname, './jwtRS256.key'), 'utf-8');
 const pubKey = fs.readFileSync(path.resolve(__dirname, './jwtRS256.key.pub'), 'utf-8');
 
+// https://russelldavies.github.io/jwk-creator/
 const teskJwk = {
   "kty": "RSA",
   "n": "wtUitPhoSb3ByZ77smmzJJufe34EAhjBQ9mKAHVMafF9VU_t41ynE1OT_XsicSWqS8EymP6A4sgUBMivRj6QD_sm1mMdR6K8d1uQyFI8zD4jsNU1CrUkF-YLNR0bwFXLqLWmOR8JgSlfBIkHazR_-AhY_uCy2wbtXTPupSgqlo-XESZq4XKenBcuMqfLyuNqhkBYwHD1qUlHpkI_4JjnAHA4i7kEtVTgoZlXqzsGrfWbM-t0obl9MjMd6EjraVlhCOVIi2HhGCWJBEMxM7cnYueBmusSuG6V_-WcyAda6aSnnzT7djAe7aLybJA57h29uTB99upVVwyIxZao5-bexh-2cDQFKUcKa1_f3WQXLoUQjYSSAhlIDNx9dVwh6Jh3yp-UURmLjxF5xjvYC5hfCgb9TH6RYGu4jI-NyAZTv_7bD0Roqe8lOXKsyEJ5ZQ1gS8LzQb5hiTpBXn4zgAkAa__gHE_lM-rVX63Hj208Fj_wG18pypWjcXlvR3t7TLuXAlSJUkbAOHkoLHaUBg4Jrhc0En05PelzUvoEyEcAm1--92OTXA4EN4R_EKuABuimp8vuo21rvV03RQLPwMbTJSmdDrCcDfQ-90nee4obadGrEvMuERfTpMGA7Zc9sLwrVpx066W3a-iKOdzz1VIvwly_woAy3M3J-OXr8Zkd8u0",
