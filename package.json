@@ -4,7 +4,7 @@
   "description": "authenticates AWS Cognito JWT",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose"
+    "test": "jest --coverage"
   },
   "repository": {
     "type": "git",
