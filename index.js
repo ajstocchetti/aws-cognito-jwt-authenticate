@@ -1,6 +1,6 @@
+const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
-const jwk = require('./jwk.js');
 
 // see http://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-with-identity-providers.html
 
@@ -53,7 +53,13 @@ function getUserPoolUri({userPoolId, region}) {
 
 async function getPem(userPoolURI, keyId) {
   // TODO: cache these somehow
-  const jwks = await jwk.getJwks(userPoolURI);
+  const jwks = await getJwks(userPoolURI);
   const keys = jwks.keys.filter(key => key.kid === keyId);
   return keys[0] ? jwkToPem(keys[0]) : null;
+}
+
+async function getJwks(userPoolURI) {
+  const jwtKeySetURI = `${userPoolURI}/.well-known/jwks.json`;
+  const response = await axios.get(jwtKeySetURI);
+  return response.data;
 }

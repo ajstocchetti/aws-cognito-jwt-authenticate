@@ -1,5 +1,5 @@
 const auth = require('./index.js');
-const jwks = require('./jwk.js');
+const axios = require('axios');
 const helper = require('./tests/helper.js');
 const {
   getPem,
@@ -20,11 +20,11 @@ describe('getUserPoolUri', () => {
 
 describe('getPem', () => {
   beforeAll(() => {
-    jwks.getJwks = jest.fn(async () => helper.jwkResponse);
+    axios.get = jest.fn(async () => ({ data: helper.jwkResponse }));
   });
 
   afterAll(() => {
-    jwks.getJwks.mockRestore();
+    axios.get.mockRestore();
   });
 
   test('returns null when it cannot find the key', async () => {
@@ -40,11 +40,11 @@ describe('getPem', () => {
 
 describe('validateJwt - failure cases', () => {
   beforeAll(() => {
-    jwks.getJwks = jest.fn(async () => helper.jwkResponse);
+    axios.get = jest.fn(async () => ({ data: helper.jwkResponse }));
   });
 
   afterAll(() => {
-    jwks.getJwks.mockRestore();
+    axios.get.mockRestore();
   });
 
   const cognitoDetails = { region: 'us-east-2', userPoolId: 'abcde-12345' };
@@ -88,11 +88,11 @@ describe('validateJwt - failure cases', () => {
 
 describe('validateJwt - success cases', () => {
   beforeAll(() => {
-    jwks.getJwks = jest.fn(async () => helper.jwkResponse);
+    axios.get = jest.fn(async () => ({ data: helper.jwkResponse }));
   });
 
   afterAll(() => {
-    jwks.getJwks.mockRestore();
+    axios.get.mockRestore();
   });
 
   const cognitoDetails = { region: 'us-east-2', userPoolId: 'abcde-12345' };
