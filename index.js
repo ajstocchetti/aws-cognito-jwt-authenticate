@@ -11,18 +11,18 @@ module.exports = {
 }
 
 async function validateJwt(token, cognitoArray) {
-  // Fail if there is no token
+  // Reject if there is no token
   if (!token) {
     throw new Error('No JWT provided');
   }
 
-  // Fail if the token is not a jwt
+  // Reject if the token is not a jwt
   const decodedJwt = jwt.decode(token, { complete: true });
   if (!decodedJwt) {
     throw new Error(`Invalid JWT: ${token}`);
   }
 
-  // Fail if token is not from allowed User Pool
+  // Reject if token is not from allowed User Pool
   const issuer = decodedJwt.payload.iss;
   // allow passing in a single cognito details object
   if (!Array.isArray(cognitoArray)) cognitoArray = [cognitoArray];
@@ -43,7 +43,7 @@ async function validateJwt(token, cognitoArray) {
   }
 
   // Reject if invalid signature
-  // (jwt.verify will throw an error if the token is invalid)
+  // jwt.verify will throw an error if the token is invalid
   return jwt.verify(token, pem, { issuer });
 }
 
@@ -53,13 +53,8 @@ function getUserPoolUri({userPoolId, region}) {
 
 async function getPem(userPoolURI, keyId) {
   // TODO: cache these somehow
-  const jwks = await getJwks(userPoolURI);
-  const keys = jwks.keys.filter(key => key.kid === keyId);
-  return keys[0] ? jwkToPem(keys[0]) : null;
-}
-
-async function getJwks(userPoolURI) {
   const jwtKeySetURI = `${userPoolURI}/.well-known/jwks.json`;
   const response = await axios.get(jwtKeySetURI);
-  return response.data;
+  const keys = response.data.keys.filter(key => key.kid === keyId);
+  return keys[0] ? jwkToPem(keys[0]) : null;
 }
