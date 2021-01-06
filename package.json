@@ -25,7 +25,7 @@
     "jest": "^25.4.0"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "jsonwebtoken": "^8.5.1",
     "jwk-to-pem": "^2.0.3"
   }
