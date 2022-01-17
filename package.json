@@ -1,6 +1,6 @@
 {
   "name": "aws-cognito-jwt-authenticate",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "authenticates AWS Cognito JWT",
   "main": "index.js",
   "scripts": {
